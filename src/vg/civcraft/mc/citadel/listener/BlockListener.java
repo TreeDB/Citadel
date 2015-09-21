@@ -43,6 +43,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.Openable;
 import org.bukkit.material.PistonBaseMaterial;
+import org.bukkit.material.PressureSensor;
 
 import vg.civcraft.mc.citadel.Citadel;
 import vg.civcraft.mc.citadel.CitadelConfigManager;
@@ -572,6 +573,27 @@ public class BlockListener implements Listener{
         catch(Exception e)
         {
             e.printStackTrace();
+        }
+    }
+    
+    @EventHandler
+    public void onPlayerInteractEvent(PlayerInteractEvent event) {
+        Block block = event.getClickedBlock();
+        if ((event.getAction() == Action.PHYSICAL) && (block instanceof PressureSensor)) {
+            Player player = event.getPlayer();
+            for (BlockFace face : planar_sides) {
+                Block bf = block.getRelative(face);
+                if ((bf.getState().getData() instanceof Openable)) {
+                    Reinforcement reinforcement = rm.getReinforcement(Utility.getRealBlock(bf));
+                    if ((reinforcement instanceof PlayerReinforcement)) {
+                        PlayerReinforcement playerReinforcement = (PlayerReinforcement) reinforcement;
+                        if (!playerReinforcement.isAccessible(player, PermissionType.DOORS)) {
+                            event.setCancelled(true);
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
     
